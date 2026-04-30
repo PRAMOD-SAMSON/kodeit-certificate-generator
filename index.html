@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panworld Certificate Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ===== Animated Background ===== */
+        .bg-orbs {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-orbs span {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: floatOrb linear infinite;
+        }
+
+        .bg-orbs span:nth-child(1) {
+            width: 300px; height: 300px;
+            background: #4dd0e1;
+            top: 10%; left: -5%;
+            animation-duration: 18s;
+        }
+        .bg-orbs span:nth-child(2) {
+            width: 200px; height: 200px;
+            background: #26c6da;
+            top: 60%; right: -3%;
+            animation-duration: 22s;
+            animation-delay: -5s;
+        }
+        .bg-orbs span:nth-child(3) {
+            width: 150px; height: 150px;
+            background: #80deea;
+            top: 30%; left: 50%;
+            animation-duration: 25s;
+            animation-delay: -10s;
+        }
+        .bg-orbs span:nth-child(4) {
+            width: 250px; height: 250px;
+            background: #00bcd4;
+            bottom: 5%; left: 20%;
+            animation-duration: 20s;
+            animation-delay: -3s;
+        }
+        .bg-orbs span:nth-child(5) {
+            width: 180px; height: 180px;
+            background: #b2ebf2;
+            top: 5%; right: 15%;
+            animation-duration: 28s;
+            animation-delay: -8s;
+        }
+
+        @keyframes floatOrb {
+            0%   { transform: translate(0, 0) scale(1); }
+            25%  { transform: translate(40px, -30px) scale(1.05); }
+            50%  { transform: translate(-20px, 40px) scale(0.95); }
+            75%  { transform: translate(-40px, -20px) scale(1.02); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        /* ===== Header / Navbar ===== */
+        .header {
+            width: 100%;
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo img {
+            height: 140px;
+            border-radius: 12px;
+        }
+
+        .header-logo span {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 1.5px;
+        }
+
+        .header-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== Main Content ===== */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px 60px;
+            width: 100%;
+            position: relative;
+            z-index: 5;
+        }
+
+        .page-heading {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .page-heading h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .page-heading p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 300;
+        }
+
+        /* ===== Controls Card ===== */
+        .controls-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .controls-card label {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            letter-spacing: 0.3px;
+        }
+
+        .controls-card input {
+            padding: 10px 16px;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            width: 280px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .controls-card input::placeholder {
+            color: rgba(255,255,255,0.35);
+        }
+
+        .controls-card input:focus {
+            border-color: #4dd0e1;
+            box-shadow: 0 0 0 3px rgba(77,208,225,0.2);
+        }
+
+        .download-btn {
+            padding: 10px 26px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f2027;
+            background: linear-gradient(135deg, #4dd0e1, #26c6da, #00bcd4);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: transform 0.15s, box-shadow 0.15s;
+            letter-spacing: 0.3px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(77,208,225,0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ===== Two-Column Layout ===== */
+        .content-row {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 1300px;
+            justify-content: center;
+        }
+
+        .left-col {
+            flex-shrink: 0;
+        }
+
+        .right-col {
+            flex: 1;
+            max-width: 420px;
+        }
+
+        /* ===== Social Panel ===== */
+        .social-panel {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            padding: 28px;
+        }
+
+        .social-panel h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .social-panel p.subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 20px;
+        }
+
+        .social-group {
+            margin-bottom: 20px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .social-group:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .social-group-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .social-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .social-icon.instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .social-icon.facebook { background: #1877f2; }
+        .social-icon.linkedin { background: #0a66c2; }
+
+        .social-group-header span {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+        }
+
+        .social-field {
+            width: 100%;
+            padding: 9px 14px;
+            font-size: 13px;
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            margin-bottom: 8px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .social-field::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .social-field:focus {
+            border-color: #4dd0e1;
+            box-shadow: 0 0 0 2px rgba(77,208,225,0.15);
+        }
+
+        .share-btn {
+            padding: 11px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            transition: transform 0.15s, box-shadow 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+        }
+
+        .share-btn.instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .share-btn.facebook { background: #1877f2; }
+        .share-btn.linkedin { background: #0a66c2; }
+
+        .share-buttons-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .warning-msg {
+            margin-top: 10px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #ffb74d;
+            background: rgba(255,183,77,0.1);
+            border: 1px solid rgba(255,183,77,0.3);
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .warning-msg.visible {
+            display: block;
+        }
+
+        /* ===== Certificate ===== */
+        .cert-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .cert-container:hover {
+            transform: scale(1.01);
+        }
+
+        .cert-wrapper {
+            width: 1122px;
+            height: 793px;
+            position: relative;
+            background: #fff;
+            overflow: hidden;
+            transform: scale(0.55);
+            transform-origin: top left;
+        }
+
+        .cert-sizer {
+            width: calc(1122px * 0.55);
+            height: calc(793px * 0.55);
+            overflow: hidden;
+        }
+
+        .cert-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .name-overlay {
+            position: absolute;
+            top: 41.2%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 84%;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: 56px;
+            color: #11595B;
+            line-height: 1;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.25);
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== Custom Modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #1a2a3a, #1e3a4a);
+            border: 1px solid rgba(77,208,225,0.3);
+            border-radius: 20px;
+            padding: 32px 28px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: #fff;
+            font-size: 28px;
+        }
+
+        .modal-icon.instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .modal-icon.facebook { background: #1877f2; }
+        .modal-icon.linkedin { background: #0a66c2; }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .modal-msg {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .modal-msg strong {
+            color: #4dd0e1;
+        }
+
+        .modal-btn {
+            padding: 12px 36px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f2027;
+            background: linear-gradient(135deg, #4dd0e1, #26c6da);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(77,208,225,0.4);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 1100px) {
+            .content-row { flex-direction: column; align-items: center; }
+            .right-col { max-width: 500px; width: 100%; }
+        }
+        @media (max-width: 900px) {
+            .cert-wrapper { transform: scale(0.45); }
+            .cert-sizer { width: calc(1122px * 0.45); height: calc(793px * 0.45); }
+            .header { padding: 12px 20px; }
+            .page-heading h1 { font-size: 22px; }
+        }
+        @media (max-width: 650px) {
+            .cert-wrapper { transform: scale(0.25); }
+            .cert-sizer { width: calc(1122px * 0.25); height: calc(793px * 0.25); }
+            .main { padding: 24px 20px 40px; }
+            .controls-card { flex-direction: column; padding: 16px; margin-bottom: 20px; margin-left: 12px; margin-right: 12px; }
+            .controls-card input { width: 100%; }
+            .header-title { display: none; }
+            .header-logo img { height: 80px; }
+            .social-panel { padding: 18px 16px; margin: 0 12px; }
+            .content-row { gap: 20px; padding: 0 12px; }
+            .left-col { width: 100%; padding: 0 8px; overflow: hidden; }
+            .right-col { max-width: 100%; padding: 0 8px; }
+            .cert-container { margin: 0 auto; max-width: 100%; overflow: hidden; border-radius: 10px; }
+            .cert-sizer { max-width: 100%; overflow: hidden; }
+            .share-buttons-row { gap: 8px; padding: 0 12px; }
+            .share-btn { padding: 10px 14px; font-size: 12px; }
+            .page-heading { margin-bottom: 18px; padding: 0 12px; }
+            .page-heading h1 { font-size: 20px; }
+            .page-heading p { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-orbs">
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="header">
+        <div class="header-logo">
+            <img src="Kodit_logo.png" alt="Kodeit Logo">
+            <span>KODEIT</span>
+        </div>
+        <div class="header-title">Certificate Generator</div>
+    </div>
+
+    <div class="main">
+        <div class="page-heading">
+            <h1>Panworld Education Certificate</h1>
+            <p>Enter the participant name below and download the certificate as PDF</p>
+        </div>
+
+        <div class="controls-card">
+            <label for="nameInput">Participant Name:</label>
+            <input type="text" id="nameInput" placeholder="Enter full name..." oninput="updateName()" maxlength="60">
+            <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">⬇ Download PDF</button>
+        </div>
+
+        <div class="content-row">
+            <div class="left-col">
+                <div class="cert-container">
+                    <div class="cert-sizer">
+                        <div class="cert-wrapper" id="certificate">
+                            <img class="cert-bg" src="certificate.png" alt="Certificate" crossorigin="anonymous">
+                            <div class="name-overlay" id="certName">Participant Name</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Share buttons below certificate -->
+                <div class="share-buttons-row">
+                    <button class="share-btn instagram" onclick="shareToInstagram()"><i class="fa-brands fa-instagram"></i> Share on Instagram</button>
+                    <button class="share-btn facebook" onclick="shareToFacebook()"><i class="fa-brands fa-facebook-f"></i> Share on Facebook</button>
+                    <button class="share-btn linkedin" onclick="shareToLinkedin()"><i class="fa-brands fa-linkedin-in"></i> Share on LinkedIn</button>
+                </div>
+                <div class="warning-msg" id="shareWarning">⚠ Please enter a participant name first.</div>
+            </div>
+
+            <div class="right-col">
+                <div class="social-panel">
+                    <h3>Submit Your Post Links</h3>
+                    <p class="subtitle">After sharing your certificate on social media, paste your post links below.</p>
+
+                    <!-- Instagram -->
+                    <div class="social-group">
+                        <div class="social-group-header">
+                            <div class="social-icon instagram"><i class="fa-brands fa-instagram"></i></div>
+                            <span>Instagram</span>
+                        </div>
+                        <input type="text" class="social-field" id="instaId" placeholder="Your Instagram ID (e.g. @username)" oninput="clearSubmitWarning()">
+                        <input type="url" class="social-field" id="instaPostUrl" placeholder="Paste your Instagram post URL" oninput="clearSubmitWarning()">
+                    </div>
+
+                    <!-- Facebook -->
+                    <div class="social-group">
+                        <div class="social-group-header">
+                            <div class="social-icon facebook"><i class="fa-brands fa-facebook-f"></i></div>
+                            <span>Facebook</span>
+                        </div>
+                        <input type="text" class="social-field" id="fbId" placeholder="Your Facebook ID / Username" oninput="clearSubmitWarning()">
+                        <input type="url" class="social-field" id="fbPostUrl" placeholder="Paste your Facebook post URL" oninput="clearSubmitWarning()">
+                    </div>
+
+                    <!-- LinkedIn -->
+                    <div class="social-group">
+                        <div class="social-group-header">
+                            <div class="social-icon linkedin"><i class="fa-brands fa-linkedin-in"></i></div>
+                            <span>LinkedIn</span>
+                        </div>
+                        <input type="text" class="social-field" id="linkedinId" placeholder="Your LinkedIn ID / Profile URL" oninput="clearSubmitWarning()">
+                        <input type="url" class="social-field" id="linkedinPostUrl" placeholder="Paste your LinkedIn post URL" oninput="clearSubmitWarning()">
+                    </div>
+
+                    <button class="download-btn" style="width:100%; margin-top:16px;" onclick="submitLinks()">Submit</button>
+                    <div class="warning-msg" id="submitWarning"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">Powered by Kodeit &middot; Panworld Education Academic Forum</div>
+
+    <!-- Custom Modal -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-box">
+            <div class="modal-icon" id="modalIcon"></div>
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-msg" id="modalMsg"></div>
+            <button class="modal-btn" id="modalBtn" onclick="closeModalAndRedirect()">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        const nameEl = document.getElementById('certName');
+        const inputEl = document.getElementById('nameInput');
+        const wrapperWidth = 1122;
+
+        function updateName() {
+            const name = inputEl.value.trim();
+            nameEl.textContent = name || 'Participant Name';
+            fitName();
+            if (name) { hideWarning(); hideSubmitWarning(); }
+        }
+
+        function fitName() {
+            const MAX = 56;
+            const SAFETY_MIN = 24;
+            nameEl.style.fontSize = MAX + 'px';
+            const maxWidth = wrapperWidth * 0.84;
+            let size = MAX;
+            while (nameEl.scrollWidth > maxWidth && size > SAFETY_MIN) {
+                size -= 1;
+                nameEl.style.fontSize = size + 'px';
+            }
+        }
+
+        function downloadPDF() {
+            const name = inputEl.value.trim();
+            if (!name) {
+                showWarning();
+                return;
+            }
+            hideWarning();
+
+            const element = document.getElementById('certificate');
+            const filename = name + ' Certificate.pdf';
+            const btn = document.getElementById('downloadBtn');
+
+            // Temporarily reset the scale for PDF capture
+            element.style.transform = 'scale(1)';
+
+            const opt = {
+                margin:       0,
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 3, useCORS: true, width: 1122, height: 793, backgroundColor: '#ffffff' },
+                jsPDF:        { unit: 'px', format: [1122, 793], orientation: 'landscape', hotfixes: ['px_scaling'] }
+            };
+
+            btn.textContent = 'Generating...';
+            btn.disabled = true;
+
+            html2pdf().set(opt).from(element).save().then(function() {
+                element.style.transform = '';
+                btn.textContent = '⬇ Download PDF';
+                btn.disabled = false;
+            }).catch(function(err) {
+                console.error(err);
+                element.style.transform = '';
+                btn.textContent = '⬇ Download PDF';
+                btn.disabled = false;
+                alert('Could not generate PDF. Please run this from a local web server.');
+            });
+        }
+
+        // Generate certificate as image blob
+        function getCertificateImage() {
+            return new Promise(function(resolve, reject) {
+                const name = inputEl.value.trim();
+                if (!name) {
+                    showWarning();
+                    reject('No name');
+                    return;
+                }
+                hideWarning();
+                const element = document.getElementById('certificate');
+                element.style.transform = 'scale(1)';
+
+                html2canvas(element, { scale: 2, useCORS: true, width: 1122, height: 793, backgroundColor: '#ffffff' }).then(function(canvas) {
+                    element.style.transform = '';
+                    canvas.toBlob(function(blob) {
+                        resolve({ blob: blob, canvas: canvas });
+                    }, 'image/png');
+                }).catch(function(err) {
+                    element.style.transform = '';
+                    reject(err);
+                });
+            });
+        }
+
+        // Custom modal
+        var pendingRedirectUrl = '';
+
+        function showModal(iconClass, title, msg, url) {
+            var iconEl = document.getElementById('modalIcon');
+            iconEl.className = 'modal-icon ' + iconClass;
+            iconEl.innerHTML = iconClass === 'instagram' ? '<i class="fa-brands fa-instagram"></i>' : iconClass === 'facebook' ? '<i class="fa-brands fa-facebook-f"></i>' : '<i class="fa-brands fa-linkedin-in"></i>';
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMsg').innerHTML = msg;
+            document.getElementById('customModal').classList.add('active');
+            pendingRedirectUrl = url;
+        }
+
+        function closeModalAndRedirect() {
+            document.getElementById('customModal').classList.remove('active');
+            if (pendingRedirectUrl) {
+                window.open(pendingRedirectUrl, '_blank');
+                pendingRedirectUrl = '';
+            }
+        }
+
+        // Fallback: download image for sharing
+        function downloadAndOpen(blob, platform, url) {
+            const name = inputEl.value.trim() || 'Certificate';
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = name + '_Certificate.png';
+            link.click();
+            URL.revokeObjectURL(link.href);
+            setTimeout(function() {
+                var msg = '<strong>' + name + '_Certificate.png</strong> is saved.<br><br>You will be redirected to <strong>' + platform + '</strong>.<br>Please post the certificate, then come back and submit the post link.';
+                var iconClass = platform === 'Instagram' ? 'instagram' : platform === 'Facebook' ? 'facebook' : 'linkedin';
+                showModal(iconClass, 'Certificate Saved!', msg, url);
+            }, 300);
+        }
+
+        // Share to Instagram
+        function shareToInstagram() {
+            getCertificateImage().then(function(data) {
+                downloadAndOpen(data.blob, 'Instagram', 'https://www.instagram.com/');
+            });
+        }
+
+        // Share to Facebook
+        function shareToFacebook() {
+            getCertificateImage().then(function(data) {
+                downloadAndOpen(data.blob, 'Facebook', 'https://www.facebook.com/');
+            });
+        }
+
+        // Share to LinkedIn
+        function shareToLinkedin() {
+            getCertificateImage().then(function(data) {
+                downloadAndOpen(data.blob, 'LinkedIn', 'https://www.linkedin.com/feed/');
+            });
+        }
+
+        // Fallback message if Web Share API not supported (desktop browsers)
+        function showShareFallback(platform) {
+            const el = document.getElementById('shareWarning');
+            el.textContent = '⚠ Direct sharing is supported on mobile devices. Please open this page on your phone to share directly to ' + platform + '.';
+            el.classList.add('visible');
+            setTimeout(function() { el.classList.remove('visible'); }, 5000);
+        }
+
+        // Google Sheets Apps Script Web App URL
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbypPhLTMmvxwFutVoFTO-gOXrkKBgebZihQKTwhQNZVlJlA7SDaI_annnztbKePccnL/exec';
+
+        // Submit post links to Google Sheet
+        function submitLinks() {
+            const name = inputEl.value.trim();
+            const instaId = document.getElementById('instaId').value.trim();
+            const instaPost = document.getElementById('instaPostUrl').value.trim();
+            const fbId = document.getElementById('fbId').value.trim();
+            const fbPost = document.getElementById('fbPostUrl').value.trim();
+            const linkedinId = document.getElementById('linkedinId').value.trim();
+            const linkedinPost = document.getElementById('linkedinPostUrl').value.trim();
+
+            // Name is compulsory
+            if (!name) {
+                showSubmitWarning('⚠ Please enter a participant name.');
+                return;
+            }
+
+            // At least one social media post URL must be filled
+            if (!instaPost && !fbPost && !linkedinPost) {
+                showSubmitWarning('⚠ Please fill at least one social media post URL.');
+                return;
+            }
+
+            hideSubmitWarning();
+
+            const data = {
+                name: name,
+                instagram: { id: instaId, postUrl: instaPost },
+                facebook: { id: fbId, postUrl: fbPost },
+                linkedin: { id: linkedinId, postUrl: linkedinPost }
+            };
+
+            const submitBtn = document.querySelector('.social-panel .download-btn');
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+
+            fetch(GOOGLE_SHEET_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(data),
+                redirect: 'follow'
+            }).then(function(response) {
+                submitBtn.textContent = '✓ Submitted!';
+                submitBtn.style.background = 'linear-gradient(135deg, #66bb6a, #43a047)';
+                submitBtn.disabled = true;
+                // Show thank you message
+                const thankYou = document.getElementById('submitWarning');
+                thankYou.textContent = '🎉 Thank you! Your submission has been recorded successfully.';
+                thankYou.style.color = '#66bb6a';
+                thankYou.style.background = 'rgba(102,187,106,0.1)';
+                thankYou.style.borderColor = 'rgba(102,187,106,0.3)';
+                thankYou.classList.add('visible');
+            }).catch(function(err) {
+                console.error(err);
+                submitBtn.textContent = 'Submit';
+                submitBtn.disabled = false;
+                showSubmitWarning('⚠ Submission failed. Please try again.');
+            });
+        }
+
+        // Submit warning helpers
+        function showSubmitWarning(msg) {
+            const el = document.getElementById('submitWarning');
+            el.textContent = msg;
+            el.classList.add('visible');
+        }
+        function hideSubmitWarning() {
+            const el = document.getElementById('submitWarning');
+            el.classList.remove('visible');
+        }
+        function clearSubmitWarning() {
+            hideSubmitWarning();
+        }
+
+        // Warning message helpers
+        function showWarning() {
+            const el = document.getElementById('shareWarning');
+            el.classList.add('visible');
+        }
+        function hideWarning() {
+            const el = document.getElementById('shareWarning');
+            el.classList.remove('visible');
+        }
+
+        window.addEventListener('load', fitName);
+    </script>
+</body>
+</html>
