@@ -6,6 +6,7 @@
     <title>Panworld Certificate Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -374,6 +375,25 @@
             display: block;
         }
 
+        .controls-card input[type="date"] {
+            padding: 10px 16px;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            width: 180px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            color-scheme: dark;
+        }
+
+        .controls-card input[type="date"]:focus {
+            border-color: #4dd0e1;
+            box-shadow: 0 0 0 3px rgba(77,208,225,0.2);
+        }
+
         /* ===== Certificate ===== */
         .cert-container {
             border-radius: 12px;
@@ -427,6 +447,21 @@
             line-height: 1;
             white-space: nowrap;
             letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .date-overlay {
+            position: absolute;
+            top: 64.35%;
+            left: 49.8%;
+            transform: translateY(-50%);
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 24px;
+            color: #1a1a1a;
+            line-height: 1;
+            white-space: nowrap;
             z-index: 2;
         }
 
@@ -584,7 +619,9 @@
         <div class="controls-card">
             <label for="nameInput">Participant Name:</label>
             <input type="text" id="nameInput" placeholder="Enter full name..." oninput="updateName()" maxlength="60">
-            <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">⬇ Download PDF</button>
+            <label for="dateInput">Event Date:</label>
+            <input type="date" id="dateInput" oninput="updateDate()" style="width: 180px;">
+            <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">⬇ Download Certificate</button>
         </div>
 
         <div class="content-row">
@@ -594,6 +631,7 @@
                         <div class="cert-wrapper" id="certificate">
                             <img class="cert-bg" src="certificate.png" alt="Certificate" crossorigin="anonymous">
                             <div class="name-overlay" id="certName">Participant Name</div>
+                            <div class="date-overlay" id="certDate"></div>
                         </div>
                     </div>
                 </div>
@@ -662,8 +700,19 @@
 
     <script>
         const nameEl = document.getElementById('certName');
+        const dateEl = document.getElementById('certDate');
         const inputEl = document.getElementById('nameInput');
+        const dateInputEl = document.getElementById('dateInput');
         const wrapperWidth = 1122;
+
+        // Set today's date as default
+        (function() {
+            var today = new Date();
+            var yyyy = today.getFullYear();
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var dd = String(today.getDate()).padStart(2, '0');
+            dateInputEl.value = yyyy + '-' + mm + '-' + dd;
+        })();
 
         function updateName() {
             const name = inputEl.value.trim();
@@ -671,6 +720,30 @@
             fitName();
             if (name) { hideWarning(); hideSubmitWarning(); }
         }
+
+        // Format date as "11 April 2026"
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            var parts = dateStr.split('-');
+            if (parts.length !== 3) return '';
+            var year = parseInt(parts[0]);
+            var month = parseInt(parts[1]);
+            var day = parseInt(parts[2]);
+            if (isNaN(year) || isNaN(month) || isNaN(day)) return '';
+            if (month < 1 || month > 12 || day < 1 || day > 31) return '';
+            var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            return day + ' ' + months[month - 1] + ' ' + year;
+        }
+
+        function updateDate() {
+            var val = dateInputEl.value;
+            var formatted = formatDate(val);
+            dateEl.textContent = formatted;
+            if (val) { hideWarning(); }
+        }
+
+        // Show today's date on the certificate at load
+        updateDate();
 
         function fitName() {
             const MAX = 56;
@@ -686,8 +759,15 @@
 
         function downloadPDF() {
             const name = inputEl.value.trim();
-            if (!name) {
-                showWarning();
+            const date = dateInputEl.value;
+            if (!name || !date) {
+                var msg = !name && !date ? '⚠ Please enter participant name and event date.' : !name ? '⚠ Please enter a participant name.' : '⚠ Please select an event date.';
+                var el = document.getElementById('shareWarning');
+                el.textContent = msg;
+                el.style.color = '';
+                el.style.background = '';
+                el.style.borderColor = '';
+                el.classList.add('visible');
                 return;
             }
             hideWarning();
@@ -696,28 +776,31 @@
             const filename = name + ' Certificate.pdf';
             const btn = document.getElementById('downloadBtn');
 
-            // Temporarily reset the scale for PDF capture
-            element.style.transform = 'scale(1)';
-
-            const opt = {
-                margin:       0,
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  { scale: 3, useCORS: true, width: 1122, height: 793, backgroundColor: '#ffffff' },
-                jsPDF:        { unit: 'px', format: [1122, 793], orientation: 'landscape', hotfixes: ['px_scaling'] }
-            };
-
             btn.textContent = 'Generating...';
             btn.disabled = true;
 
-            html2pdf().set(opt).from(element).save().then(function() {
+            // Use the same approach as getCertificateImage (which works correctly)
+            element.style.transform = 'scale(1)';
+
+            html2canvas(element, { scale: 3, useCORS: true, width: 1122, height: 793, backgroundColor: '#ffffff' }).then(function(canvas) {
                 element.style.transform = '';
-                btn.textContent = '⬇ Download PDF';
+
+                var imgData = canvas.toDataURL('image/jpeg', 1.0);
+                var pdf = new jspdf.jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: [1122, 793],
+                    hotfixes: ['px_scaling']
+                });
+                pdf.addImage(imgData, 'JPEG', 0, 0, 1122, 793);
+                pdf.save(filename);
+
+                btn.textContent = '⬇ Download Certificate';
                 btn.disabled = false;
             }).catch(function(err) {
                 console.error(err);
                 element.style.transform = '';
-                btn.textContent = '⬇ Download PDF';
+                btn.textContent = '⬇ Download Certificate';
                 btn.disabled = false;
                 alert('Could not generate PDF. Please run this from a local web server.');
             });
@@ -727,9 +810,16 @@
         function getCertificateImage() {
             return new Promise(function(resolve, reject) {
                 const name = inputEl.value.trim();
-                if (!name) {
-                    showWarning();
-                    reject('No name');
+                const date = dateInputEl.value;
+                if (!name || !date) {
+                    var msg = !name && !date ? '⚠ Please enter participant name and event date.' : !name ? '⚠ Please enter a participant name.' : '⚠ Please select an event date.';
+                    var el = document.getElementById('shareWarning');
+                    el.textContent = msg;
+                    el.style.color = '';
+                    el.style.background = '';
+                    el.style.borderColor = '';
+                    el.classList.add('visible');
+                    reject('Missing fields');
                     return;
                 }
                 hideWarning();
