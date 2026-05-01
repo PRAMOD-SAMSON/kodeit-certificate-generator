@@ -680,6 +680,12 @@
                         <input type="url" class="social-field" id="linkedinPostUrl" placeholder="Paste your LinkedIn post URL" oninput="clearSubmitWarning()">
                     </div>
 
+                    <!-- Email -->
+                    <div class="social-group">
+                        <label style="color:#fff; font-size:14px; font-weight:600; margin-bottom:6px; display:block;">Email Address <span style="color:#ff6b6b;">*</span></label>
+                        <input type="email" class="social-field" id="emailInput" placeholder="Enter your email address" oninput="clearSubmitWarning()">
+                    </div>
+
                     <button class="download-btn" style="width:100%; margin-top:16px;" onclick="submitLinks()">Submit</button>
                     <div class="warning-msg" id="submitWarning"></div>
                 </div>
@@ -910,6 +916,7 @@
         // Submit post links to Google Sheet
         function submitLinks() {
             const name = inputEl.value.trim();
+            const email = document.getElementById('emailInput').value.trim();
             const instaId = document.getElementById('instaId').value.trim();
             const instaPost = document.getElementById('instaPostUrl').value.trim();
             const fbId = document.getElementById('fbId').value.trim();
@@ -923,6 +930,19 @@
                 return;
             }
 
+            // Email is compulsory
+            if (!email) {
+                showSubmitWarning('⚠ Please enter your email address.');
+                return;
+            }
+
+            // Validate email format
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showSubmitWarning('⚠ Please enter a valid email address.');
+                return;
+            }
+
             // At least one social media post URL must be filled
             if (!instaPost && !fbPost && !linkedinPost) {
                 showSubmitWarning('⚠ Please fill at least one social media post URL.');
@@ -933,6 +953,7 @@
 
             const data = {
                 name: name,
+                email: email,
                 instagram: { id: instaId, postUrl: instaPost },
                 facebook: { id: fbId, postUrl: fbPost },
                 linkedin: { id: linkedinId, postUrl: linkedinPost }
