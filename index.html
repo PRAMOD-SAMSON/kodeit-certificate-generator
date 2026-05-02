@@ -650,7 +650,7 @@
                     <h3>Submit Your Post Links</h3>
                     <p class="subtitle">After sharing your certificate on social media, paste your post links below.</p>
 
-                    <!-- Instagram -->
+                    <!-- Instagram - commented out for now
                     <div class="social-group">
                         <div class="social-group-header">
                             <div class="social-icon instagram"><i class="fa-brands fa-instagram"></i></div>
@@ -659,8 +659,9 @@
                         <input type="text" class="social-field" id="instaId" placeholder="Your Instagram ID (e.g. @username)" oninput="clearSubmitWarning()">
                         <input type="url" class="social-field" id="instaPostUrl" placeholder="Paste your Instagram post URL" oninput="clearSubmitWarning()">
                     </div>
+                    -->
 
-                    <!-- Facebook -->
+                    <!-- Facebook - commented out for now
                     <div class="social-group">
                         <div class="social-group-header">
                             <div class="social-icon facebook"><i class="fa-brands fa-facebook-f"></i></div>
@@ -669,21 +670,22 @@
                         <input type="text" class="social-field" id="fbId" placeholder="Your Facebook ID / Username" oninput="clearSubmitWarning()">
                         <input type="url" class="social-field" id="fbPostUrl" placeholder="Paste your Facebook post URL" oninput="clearSubmitWarning()">
                     </div>
-
-                    <!-- LinkedIn -->
-                    <div class="social-group">
-                        <div class="social-group-header">
-                            <div class="social-icon linkedin"><i class="fa-brands fa-linkedin-in"></i></div>
-                            <span>LinkedIn</span>
-                        </div>
-                        <input type="text" class="social-field" id="linkedinId" placeholder="Your LinkedIn ID / Profile URL" oninput="clearSubmitWarning()">
-                        <input type="url" class="social-field" id="linkedinPostUrl" placeholder="Paste your LinkedIn post URL" oninput="clearSubmitWarning()">
-                    </div>
+                    -->
 
                     <!-- Email -->
                     <div class="social-group">
                         <label style="color:#fff; font-size:14px; font-weight:600; margin-bottom:6px; display:block;">Email Address <span style="color:#ff6b6b;">*</span></label>
                         <input type="email" class="social-field" id="emailInput" placeholder="Enter your email address" oninput="clearSubmitWarning()">
+                    </div>
+
+                    <!-- LinkedIn -->
+                    <div class="social-group">
+                        <div class="social-group-header">
+                            <div class="social-icon linkedin"><i class="fa-brands fa-linkedin-in"></i></div>
+                            <span>LinkedIn <span style="color:#ff6b6b; font-size:12px;">*</span></span>
+                        </div>
+                        <input type="text" class="social-field" id="linkedinId" placeholder="Your LinkedIn ID / Profile URL" oninput="clearSubmitWarning()">
+                        <input type="url" class="social-field" id="linkedinPostUrl" placeholder="Paste your LinkedIn post URL" oninput="clearSubmitWarning()">
                     </div>
 
                     <button class="download-btn" style="width:100%; margin-top:16px;" onclick="submitLinks()">Submit</button>
@@ -917,10 +919,10 @@
         function submitLinks() {
             const name = inputEl.value.trim();
             const email = document.getElementById('emailInput').value.trim();
-            const instaId = document.getElementById('instaId').value.trim();
-            const instaPost = document.getElementById('instaPostUrl').value.trim();
-            const fbId = document.getElementById('fbId').value.trim();
-            const fbPost = document.getElementById('fbPostUrl').value.trim();
+            // const instaId = document.getElementById('instaId').value.trim();
+            // const instaPost = document.getElementById('instaPostUrl').value.trim();
+            // const fbId = document.getElementById('fbId').value.trim();
+            // const fbPost = document.getElementById('fbPostUrl').value.trim();
             const linkedinId = document.getElementById('linkedinId').value.trim();
             const linkedinPost = document.getElementById('linkedinPostUrl').value.trim();
 
@@ -943,9 +945,15 @@
                 return;
             }
 
-            // At least one social media post URL must be filled
-            if (!instaPost && !fbPost && !linkedinPost) {
-                showSubmitWarning('⚠ Please fill at least one social media post URL.');
+            // LinkedIn post URL is compulsory
+            if (!linkedinPost) {
+                showSubmitWarning('⚠ Please paste your LinkedIn post URL.');
+                return;
+            }
+
+            // Validate LinkedIn post URL format
+            if (!linkedinPost.startsWith('http')) {
+                showSubmitWarning('⚠ Please enter a valid LinkedIn post URL.');
                 return;
             }
 
@@ -954,8 +962,8 @@
             const data = {
                 name: name,
                 email: email,
-                instagram: { id: instaId, postUrl: instaPost },
-                facebook: { id: fbId, postUrl: fbPost },
+                // instagram: { id: instaId, postUrl: instaPost },
+                // facebook: { id: fbId, postUrl: fbPost },
                 linkedin: { id: linkedinId, postUrl: linkedinPost }
             };
 
