@@ -638,8 +638,8 @@
                 </div>
                 <!-- Share buttons below certificate -->
                 <div class="share-buttons-row">
-                    <button class="share-btn instagram" onclick="shareToInstagram()"><i class="fa-brands fa-instagram"></i> Share on Instagram</button>
-                    <button class="share-btn facebook" onclick="shareToFacebook()"><i class="fa-brands fa-facebook-f"></i> Share on Facebook</button>
+                    <!-- <button class="share-btn instagram" onclick="shareToInstagram()"><i class="fa-brands fa-instagram"></i> Share on Instagram</button> -->
+                    <!-- <button class="share-btn facebook" onclick="shareToFacebook()"><i class="fa-brands fa-facebook-f"></i> Share on Facebook</button> -->
                     <button class="share-btn linkedin" onclick="shareToLinkedin()"><i class="fa-brands fa-linkedin-in"></i> Share on LinkedIn</button>
                 </div>
                 <div class="warning-msg" id="shareWarning">⚠ Please enter a participant name first.</div>
@@ -883,19 +883,19 @@
             }, 300);
         }
 
-        // Share to Instagram
-        function shareToInstagram() {
-            getCertificateImage().then(function(data) {
-                downloadAndOpen(data.blob, 'Instagram', 'https://www.instagram.com/');
-            });
-        }
+        // Share to Instagram - commented out for now
+        // function shareToInstagram() {
+        //     getCertificateImage().then(function(data) {
+        //         downloadAndOpen(data.blob, 'Instagram', 'https://www.instagram.com/');
+        //     });
+        // }
 
-        // Share to Facebook
-        function shareToFacebook() {
-            getCertificateImage().then(function(data) {
-                downloadAndOpen(data.blob, 'Facebook', 'https://www.facebook.com/');
-            });
-        }
+        // Share to Facebook - commented out for now
+        // function shareToFacebook() {
+        //     getCertificateImage().then(function(data) {
+        //         downloadAndOpen(data.blob, 'Facebook', 'https://www.facebook.com/');
+        //     });
+        // }
 
         // Share to LinkedIn
         function shareToLinkedin() {
