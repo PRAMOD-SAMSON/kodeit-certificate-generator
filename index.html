@@ -436,15 +436,15 @@
 
         .name-overlay {
             position: absolute;
-            top: 41.2%;
-            left: 50%;
+            top: 34.7%;
+            left: 60%;
             transform: translate(-50%, -50%);
             width: 84%;
             text-align: center;
             font-family: 'Inter', sans-serif;
-            font-weight: 400;
-            font-size: 56px;
-            color: #11595B;
+            font-weight: 700;
+            font-size: 62px;
+            color: #1a1a1a;
             line-height: 1;
             white-space: nowrap;
             letter-spacing: 0.5px;
@@ -452,18 +452,7 @@
         }
 
         .date-overlay {
-            position: absolute;
-            top: 64.35%;
-            left: 49.8%;
-            transform: translateY(-50%);
-            text-align: left;
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: 24px;
-            color: #1a1a1a;
-            line-height: 1;
-            white-space: nowrap;
-            z-index: 2;
+            display: none;
         }
 
         /* ===== Footer ===== */
@@ -620,8 +609,8 @@
         <div class="controls-card">
             <label for="nameInput">Participant Name:</label>
             <input type="text" id="nameInput" placeholder="Enter full name..." oninput="updateName()" maxlength="60">
-            <label for="dateInput">Event Date:</label>
-            <input type="date" id="dateInput" oninput="updateDate()" style="width: 180px;">
+            <!-- Date hidden: fixed on certificate-v3 -->
+            <input type="hidden" id="dateInput" value="2026-05-05">
             <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">⬇ Download Certificate</button>
         </div>
 
@@ -630,7 +619,7 @@
                 <div class="cert-container">
                     <div class="cert-sizer">
                         <div class="cert-wrapper" id="certificate">
-                            <img class="cert-bg" src="certificate-v2.png" alt="Certificate" crossorigin="anonymous">
+                            <img class="cert-bg" src="certificate-v3.png" alt="Certificate" crossorigin="anonymous">
                             <div class="name-overlay" id="certName">Participant Name</div>
                             <div class="date-overlay" id="certDate"></div>
                         </div>
